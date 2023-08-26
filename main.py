@@ -2,6 +2,12 @@ from PIL import Image
 import os
 
 def combine_to_orm(ambient_occlusion_path, roughness_path, metalness_path=None, output_name="orm_combined.png"):
+    print(f"Processing: {ambient_occlusion_path}, {roughness_path}", end=", ")
+    if metalness_path:
+        print(f"{metalness_path}")
+    else:
+        print("No metalness texture provided.")
+
     ao_img = Image.open(ambient_occlusion_path).convert("L")
     roughness_img = Image.open(roughness_path).convert("L")
 
@@ -22,15 +28,17 @@ def combine_to_orm(ambient_occlusion_path, roughness_path, metalness_path=None, 
             orm_img.putpixel((x, y), (r, g, b))
 
     orm_img.save(output_name)
+    print(f"Saved combined texture to: {output_name}")
 
 def process_directory(input_dir="in", output_dir="out"):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+        print(f"'{output_dir}' directory created.")
 
-    # List files in the input directory
     files = os.listdir(input_dir)
     base_names = set()
 
+    print(f"Scanning '{input_dir}' for textures...")
     for file in files:
         base_name = file.split('_AmbientOcclusion.png')[0]
         if base_name and base_name not in base_names:
@@ -47,6 +55,8 @@ def process_directory(input_dir="in", output_dir="out"):
 
             output_name = os.path.join(output_dir, base_name + "_ORM.png")
             combine_to_orm(ambient_occlusion_path, roughness_path, metalness_path, output_name)
+
+    print("Processing completed!")
 
 if __name__ == "__main__":
     process_directory()
